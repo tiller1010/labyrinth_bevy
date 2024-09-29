@@ -10,6 +10,8 @@ const PLAYER_SPEED: f32 = 250.;
 const WALL_COLOR: Color = Color::srgb(120.0, 120.0, 120.0);
 const WALL_THICKNESS: f32 = 5.;
 
+const CAM_LERP_FACTOR: f32 = 2.;
+
 #[derive(Component)]
 struct Player;
 
@@ -67,11 +69,42 @@ impl WallBundle {
     }
 }
 
+fn setup_camera(mut commands: Commands) {
+    commands.spawn((
+            Camera2dBundle {
+                camera: Camera {
+                    hdr: true,
+                    ..default()
+                },
+                ..default()
+            },
+    ));
+}
+
+fn update_camera(
+    mut camera: Query<&mut Transform, (With<Camera2d>, Without<Player>)>,
+    player: Query<&Transform, (With<Player>, Without<Camera2d>)>,
+    time: Res<Time>,
+) {
+    let Ok(mut camera) = camera.get_single_mut() else {
+        return;
+    };
+
+    let Ok(player) = player.get_single() else {
+        return;
+    };
+
+    let Vec3 { x, y, .. } = player.translation;
+    let direction = Vec3::new(x, y, camera.translation.z);
+
+    camera.translation = camera
+        .translation
+        .lerp(direction, time.delta_seconds() * CAM_LERP_FACTOR);
+}
+
 fn setup(
     mut commands: Commands,
 ) {
-    commands.spawn(Camera2dBundle::default());
-
     commands.spawn(WallBundle::new(0., 65., 200., WALL_THICKNESS));
     commands.spawn(WallBundle::new(0., -5., 130., WALL_THICKNESS));
     commands.spawn(WallBundle::new(125., -235., WALL_THICKNESS, 230.));
@@ -203,11 +236,12 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_event::<CollisionEvent>()
-        .add_systems(Startup, setup)
+        .add_systems(Startup, (setup, setup_camera))
         .add_systems(
             FixedUpdate,
             (
                 move_player,
+                update_camera,
                 // check_for_collisions,
             )
             .chain(),
