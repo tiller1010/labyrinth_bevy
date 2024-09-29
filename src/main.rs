@@ -13,9 +13,6 @@ const WALL_THICKNESS: f32 = 5.;
 #[derive(Component)]
 struct Player;
 
-#[derive(Component, Deref, DerefMut)]
-struct Velocity(Vec2);
-
 #[derive(Component)]
 struct Collider;
 
@@ -29,9 +26,6 @@ enum Collision {
     Top,
     Bottom,
 }
-
-#[derive(Component)]
-struct Wall;
 
 #[derive(Bundle)]
 struct WallBundle {
@@ -105,7 +99,7 @@ fn move_player(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut query: Query<&mut Transform, With<Player>>,
     time: Res<Time>,
-    collider_query: Query<(Entity, &Transform, Option<&Wall>), (With<Collider>, Without<Player>)>,
+    collider_query: Query<&Transform, (With<Collider>, Without<Player>)>,
     mut collision_events: EventWriter<CollisionEvent>,
 ) {
     let mut player_transform = query.single_mut();
@@ -136,7 +130,7 @@ fn move_player(
     // End move player
 
     // Start Wall Collision Detection
-    for (collider_entity, wall_transform, maybe_wall) in &collider_query {
+    for wall_transform in &collider_query {
         let collision = wall_collision(
             Aabb2d::new(
                 player_transform.translation.truncate(), 
