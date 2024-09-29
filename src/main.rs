@@ -5,9 +5,10 @@ use bevy::{
 
 const PLAYER_SIZE: Vec2 = Vec2::new(50.0, 50.0);
 const PLAYER_COLOR: Color = Color::srgb(50.0, 0.0, 0.0);
-const PLAYER_SPEED: f32 = 500.0;
+const PLAYER_SPEED: f32 = 250.;
 
 const WALL_COLOR: Color = Color::srgb(120.0, 120.0, 120.0);
+const WALL_THICKNESS: f32 = 5.;
 
 #[derive(Component)]
 struct Player;
@@ -45,10 +46,19 @@ impl WallBundle {
         size_x: f32,
         size_y: f32,
     ) -> WallBundle {
+        
+        /*
+         * Adjust start points since scaling starts at the centers
+         * Draws rectangle by starting in the bottom left corner,
+         * then drawing right and up.
+         */
+        let start_x: f32 = location_start_x + size_x / 2.;
+        let start_y: f32 = location_start_y + size_y / 2.;
+
         WallBundle {
             sprite_bundle: SpriteBundle {
                 transform: Transform {
-                    translation: Vec2::new(location_start_x, location_start_y).extend(0.0),
+                    translation: Vec2::new(start_x, start_y).extend(0.0),
                     scale: Vec2::new(size_x, size_y).extend(0.0),
                     ..default()
                 },
@@ -68,8 +78,10 @@ fn setup(
 ) {
     commands.spawn(Camera2dBundle::default());
 
-    commands.spawn(WallBundle::new(0., 65., 200., 5.));
-    commands.spawn(WallBundle::new(95., 35., 5., 300.));
+    commands.spawn(WallBundle::new(0., 65., 200., WALL_THICKNESS));
+    commands.spawn(WallBundle::new(0., -5., 130., WALL_THICKNESS));
+    commands.spawn(WallBundle::new(125., -235., WALL_THICKNESS, 230.));
+    commands.spawn(WallBundle::new(195., -235., WALL_THICKNESS, 300.));
 
     commands.spawn((
             SpriteBundle {
@@ -143,10 +155,10 @@ fn move_player(
             let mut reflect_y = 0.;
 
             match collision {
-                Collision::Left => reflect_x = -25.,
-                Collision::Right => reflect_x = 25.,
-                Collision::Top => reflect_y = 25.,
-                Collision::Bottom => reflect_y = -25.,
+                Collision::Left => reflect_x = -7.9,
+                Collision::Right => reflect_x = 7.9,
+                Collision::Top => reflect_y = 7.9,
+                Collision::Bottom => reflect_y = -7.9,
             }
 
             if reflect_x != 0. {
