@@ -29,11 +29,64 @@ enum Collision {
     Bottom,
 }
 
+#[derive(Component)]
+struct WinningMessage;
+
+#[derive(Component)]
+struct FinishArea {
+    sprite_bundle: SpriteBundle,
+    collider: Collider,
+}
+
 #[derive(Bundle)]
 struct WallBundle {
     sprite_bundle: SpriteBundle,
     collider: Collider,
 }
+
+trait DrawsBox<T> {
+    fn new(
+        location_start_x: f32,
+        location_start_y: f32,
+        size_x: f32,
+        size_y: f32,
+    ) -> T {
+        
+        /*
+         * Adjust start points since scaling starts at the centers
+         * Draws rectangle by starting in the bottom left corner,
+         * then drawing right and up.
+         */
+        let start_x: f32 = location_start_x + size_x / 2.;
+        let start_y: f32 = location_start_y + size_y / 2.;
+
+        T {
+            sprite_bundle: SpriteBundle {
+                transform: Transform {
+                    translation: Vec2::new(start_x, start_y).extend(0.0),
+                    scale: Vec2::new(size_x, size_y).extend(0.0),
+                    ..default()
+                },
+                sprite: Sprite {
+                    color: WALL_COLOR,
+                    ..default()
+                },
+                ..default()
+            },
+            collider: Collider,
+        }
+    }
+}
+
+
+impl DrawsBox for FinishArea;
+    // fn new(
+    //     location_start_x: f32,
+    //     location_start_y: f32,
+    //     size_x: f32,
+    //     size_y: f32,
+    // ) -> FinishArea {
+        
 
 impl WallBundle {
     fn new(
@@ -105,11 +158,40 @@ fn update_camera(
 fn setup(
     mut commands: Commands,
 ) {
+    // Winning message spawn
+    commands.spawn((
+            WinningMessage,
+            TextBundle::from_sections([
+                TextSection::new(
+                    "You Win!",
+                    TextStyle {
+                        font_size: 40.,
+                        color: Color::srgb(0., 0., 0.),
+                        ..default()
+                    },
+                ),
+                TextSection::from_style(TextStyle {
+                    font_size: 40.,
+                    color: Color::srgb(0., 0., 0.),
+                    ..default()
+                }),
+        ])
+        .with_style(Style {
+            position_type: PositionType::Absolute,
+            top: Val::Px(5.),
+            left: Val::Px(5.),
+            ..default()
+        }),
+    ));
+
+    // Walls spawn
     commands.spawn(WallBundle::new(0., 65., 200., WALL_THICKNESS));
     commands.spawn(WallBundle::new(0., -5., 130., WALL_THICKNESS));
     commands.spawn(WallBundle::new(125., -235., WALL_THICKNESS, 230.));
     commands.spawn(WallBundle::new(195., -235., WALL_THICKNESS, 300.));
+    commands.spawn(WallBundle::new(195., -235., 300.0, WALL_THICKNESS));
 
+    // Player spawn
     commands.spawn((
             SpriteBundle {
                 transform: Transform {
