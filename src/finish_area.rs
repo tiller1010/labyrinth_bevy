@@ -2,26 +2,32 @@ use bevy::{
     math::bounding::{Aabb2d, IntersectsVolume},
     prelude::*,
 };
+
+use crate::player::Player;
 use crate::collider::Collider;
 
-const FINISH_AREA_COLOR: Color = Color::srgb(0., 120., 0.);
+const FINISH_AREA_COLOR: Color = Color::srgb(0., 115., 0.);
 
 #[derive(Component)]
 struct WinningMessage;
 
 #[derive(Component)]
-struct FinishArea {
+pub struct FinishArea;
+
+#[derive(Bundle)]
+pub struct FinishAreaBundle {
     sprite_bundle: SpriteBundle,
     collider: Collider,
+    finish_area: FinishArea,
 }
 
-impl FinishArea {
+impl FinishAreaBundle {
     fn new(
         location_start_x: f32,
         location_start_y: f32,
         size_x: f32,
         size_y: f32,
-    ) -> FinishArea {
+    ) -> FinishAreaBundle {
         
         /*
          * Adjust start points since scaling starts at the centers
@@ -31,7 +37,7 @@ impl FinishArea {
         let start_x: f32 = location_start_x + size_x / 2.;
         let start_y: f32 = location_start_y + size_y / 2.;
 
-        FinishArea {
+        FinishAreaBundle {
             sprite_bundle: SpriteBundle {
                 transform: Transform {
                     translation: Vec2::new(start_x, start_y).extend(0.0),
@@ -44,19 +50,33 @@ impl FinishArea {
                 },
                 ..default()
             },
+            finish_area: FinishArea,
             collider: Collider,
         }
     }
 }
 
-fn finish_area_collision(player: Aabb2d, finish: Aabb2d) {
-     !player.intersects(&finish); 
+pub fn finish_area_collision(
+    commands: &mut Commands,
+    player_bounding_box: &Aabb2d,
+    finish_area_collider_query: &Query<&Transform, (With<FinishArea>, Without<Player>)>
+) {
+    for finish_area_transform in finish_area_collider_query {
+        let finish_area_bounding_box = Aabb2d::new(
+            finish_area_transform.translation.truncate(),
+            finish_area_transform.scale.truncate() / 2.,
+        );
+        if player_bounding_box.intersects(&finish_area_bounding_box) {
+            spawn_winning_message(commands);
+        }
+    }
 }
 
 pub fn spawn_finish_area(commands: &mut Commands) {
+    commands.spawn(FinishAreaBundle::new(495., -290., 50., 50.));
 }
 
-pub fn spawn_winning_message(commands: &mut Commands) {
+fn spawn_winning_message(commands: &mut Commands) {
     commands.spawn((
             WinningMessage,
             TextBundle::from_sections([

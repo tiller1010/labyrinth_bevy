@@ -1,12 +1,11 @@
 use bevy::{
-    math::bounding::{Aabb2d, IntersectsVolume},
+    math::bounding::Aabb2d,
     prelude::*,
 };
 
-use crate::walls::wall_collision;
+use crate::walls::{Wall, wall_collision};
 use crate::collider::{Collider, Collision, CollisionEvent};
-// mod super::walls;
-// mod super::collider;
+use crate::finish_area::{FinishArea, finish_area_collision};
 
 pub const PLAYER_SIZE: Vec2 = Vec2::new(50.0, 50.0);
 pub const PLAYER_COLOR: Color = Color::srgb(50.0, 0.0, 0.0);
@@ -20,7 +19,7 @@ pub fn spawn_player(commands: &mut Commands) {
     commands.spawn((
             SpriteBundle {
                 transform: Transform {
-                    translation: Vec3::new(0.0, 0.0, 0.0),
+                    translation: Vec3::new(-50.0, 35.0, 0.0),
                     scale: PLAYER_SIZE.extend(1.0),
                     ..default()
                 },
@@ -36,10 +35,12 @@ pub fn spawn_player(commands: &mut Commands) {
 }
 
 pub fn move_player(
+    mut commands: Commands,
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut query: Query<&mut Transform, With<Player>>,
     time: Res<Time>,
-    collider_query: Query<&Transform, (With<Collider>, Without<Player>)>,
+    wall_collider_query: Query<&Transform, (With<Wall>, Without<Player>)>,
+    finish_area_collider_query: Query<&Transform, (With<FinishArea>, Without<Player>)>,
     mut collision_events: EventWriter<CollisionEvent>,
 ) {
     let mut player_transform = query.single_mut();
@@ -70,12 +71,14 @@ pub fn move_player(
     // End move player
 
     // Start Wall Collision Detection
-    for wall_transform in &collider_query {
+    let player_bounding_box = Aabb2d::new(
+        player_transform.translation.truncate(), 
+        player_transform.scale.truncate() / 2.,
+    );
+
+    for wall_transform in &wall_collider_query {
         let collision = wall_collision(
-            Aabb2d::new(
-                player_transform.translation.truncate(), 
-                player_transform.scale.truncate() / 2.,
-            ),
+            &player_bounding_box,
             Aabb2d::new(
                 wall_transform.translation.truncate(),
                 wall_transform.scale.truncate() / 2.,
@@ -106,8 +109,8 @@ pub fn move_player(
     }
     // End Wall Collision Detection
 
-    // if finish_area_collision() {
-    // }
+    // Start finish area collision detection
+    finish_area_collision(&mut commands, &player_bounding_box, &finish_area_collider_query);
 }
 
 

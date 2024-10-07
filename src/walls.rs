@@ -12,7 +12,11 @@ const WALL_THICKNESS: f32 = 5.;
 struct WallBundle {
     sprite_bundle: SpriteBundle,
     collider: Collider,
+    wall: Wall,
 }
+
+#[derive(Component)]
+pub struct Wall;
 
 impl WallBundle {
     fn new(
@@ -43,18 +47,19 @@ impl WallBundle {
                 },
                 ..default()
             },
+            wall: Wall,
             collider: Collider,
         }
     }
 }
 
-pub fn wall_collision(player: Aabb2d, wall: Aabb2d) -> Option<Collision> {
-    if !player.intersects(&wall) {
+pub fn wall_collision(player_bounding_box: &Aabb2d, wall: Aabb2d) -> Option<Collision> {
+    if !player_bounding_box.intersects(&wall) {
         return None;
     }
 
-    let closest = wall.closest_point(player.bounding_circle().center);
-    let offset = player.bounding_circle().center - closest;
+    let closest = wall.closest_point(player_bounding_box.bounding_circle().center);
+    let offset = player_bounding_box.bounding_circle().center - closest;
     let side = if offset.x.abs() > offset.y.abs() {
         if offset.x < 0. {
             Collision::Left
@@ -71,9 +76,12 @@ pub fn wall_collision(player: Aabb2d, wall: Aabb2d) -> Option<Collision> {
 }
 
 pub fn spawn_walls(commands: &mut Commands) {
+    // WALL_THICKNESS is the third argument for vertical lines,
+    // fourth argument for horizontal lines
     commands.spawn(WallBundle::new(0., 65., 200., WALL_THICKNESS));
     commands.spawn(WallBundle::new(0., -5., 130., WALL_THICKNESS));
-    commands.spawn(WallBundle::new(125., -235., WALL_THICKNESS, 230.));
+    commands.spawn(WallBundle::new(125., -305., WALL_THICKNESS, 300.));
+    commands.spawn(WallBundle::new(125., -305., 370.0, WALL_THICKNESS));
     commands.spawn(WallBundle::new(195., -235., WALL_THICKNESS, 300.));
     commands.spawn(WallBundle::new(195., -235., 300.0, WALL_THICKNESS));
 }
