@@ -4,12 +4,13 @@ use bevy::{
 };
 
 use crate::collider::{Collider, Collision};
+use crate::maze::draw_maze;
 
 const WALL_COLOR: Color = Color::srgb(120.0, 120.0, 120.0);
 const WALL_THICKNESS: f32 = 5.;
 
 #[derive(Bundle)]
-struct WallBundle {
+pub struct WallBundle {
     sprite_bundle: SpriteBundle,
     collider: Collider,
     wall: Wall,
@@ -19,12 +20,24 @@ struct WallBundle {
 pub struct Wall;
 
 impl WallBundle {
-    fn new(
+    pub fn new(
         location_start_x: f32,
         location_start_y: f32,
-        size_x: f32,
-        size_y: f32,
+        location_end_x: f32,
+        location_end_y: f32,
     ) -> WallBundle {
+
+        let size_x: f32 = if location_start_x == location_end_x {
+            WALL_THICKNESS
+        } else {
+            (location_end_x - location_start_x).abs()
+        };
+
+        let size_y: f32 = if location_start_y == location_end_y {
+            WALL_THICKNESS
+        } else {
+            (location_end_y - location_start_y).abs()
+        };
         
         /*
          * Adjust start points since scaling starts at the centers
@@ -76,13 +89,6 @@ pub fn wall_collision(player_bounding_box: &Aabb2d, wall: Aabb2d) -> Option<Coll
 }
 
 pub fn spawn_walls(commands: &mut Commands) {
-    // WALL_THICKNESS is the third argument for vertical lines,
-    // fourth argument for horizontal lines
-    commands.spawn(WallBundle::new(0., 65., 200., WALL_THICKNESS));
-    commands.spawn(WallBundle::new(0., -5., 130., WALL_THICKNESS));
-    commands.spawn(WallBundle::new(125., -305., WALL_THICKNESS, 300.));
-    commands.spawn(WallBundle::new(125., -305., 370.0, WALL_THICKNESS));
-    commands.spawn(WallBundle::new(195., -235., WALL_THICKNESS, 300.));
-    commands.spawn(WallBundle::new(195., -235., 300.0, WALL_THICKNESS));
+    draw_maze(commands);
 }
 

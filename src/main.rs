@@ -5,6 +5,7 @@ mod walls;
 mod collider;
 mod camera;
 mod finish_area;
+mod maze;
 
 use crate::player::{spawn_player, move_player};
 use crate::walls::spawn_walls;

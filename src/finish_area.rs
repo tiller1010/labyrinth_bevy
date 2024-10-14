@@ -73,7 +73,7 @@ pub fn finish_area_collision(
 }
 
 pub fn spawn_finish_area(commands: &mut Commands) {
-    commands.spawn(FinishAreaBundle::new(495., -290., 50., 50.));
+    commands.spawn(FinishAreaBundle::new(575., 580., 25., 25.));
 }
 
 fn spawn_winning_message(commands: &mut Commands) {
@@ -84,7 +84,7 @@ fn spawn_winning_message(commands: &mut Commands) {
                     "You Win!",
                     TextStyle {
                         font_size: 40.,
-                        color: Color::srgb(0., 0., 0.),
+                        color: Color::srgb(120., 120., 120.),
                         ..default()
                     },
                 ),

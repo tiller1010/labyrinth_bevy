@@ -7,9 +7,9 @@ use crate::walls::{Wall, wall_collision};
 use crate::collider::{Collider, Collision, CollisionEvent};
 use crate::finish_area::{FinishArea, finish_area_collision};
 
-pub const PLAYER_SIZE: Vec2 = Vec2::new(50.0, 50.0);
+pub const PLAYER_SIZE: Vec2 = Vec2::new(10.0, 10.0);
 pub const PLAYER_COLOR: Color = Color::srgb(50.0, 0.0, 0.0);
-pub const PLAYER_SPEED: f32 = 250.;
+pub const PLAYER_SPEED: f32 = 200.;
 
 #[derive(Component)]
 pub struct Player;
@@ -19,7 +19,7 @@ pub fn spawn_player(commands: &mut Commands) {
     commands.spawn((
             SpriteBundle {
                 transform: Transform {
-                    translation: Vec3::new(-50.0, 35.0, 0.0),
+                    translation: Vec3::new(20., 10., 0.),
                     scale: PLAYER_SIZE.extend(1.0),
                     ..default()
                 },
