@@ -7,9 +7,9 @@ use crate::walls::{Wall, wall_collision};
 use crate::collider::{Collider, Collision, CollisionEvent};
 use crate::finish_area::{FinishArea, finish_area_collision};
 
-pub const PLAYER_SIZE: Vec2 = Vec2::new(10.0, 10.0);
-pub const PLAYER_COLOR: Color = Color::srgb(50.0, 0.0, 0.0);
-pub const PLAYER_SPEED: f32 = 200.;
+const PLAYER_SIZE: Vec2 = Vec2::new(10.0, 10.0);
+const PLAYER_COLOR: Color = Color::srgb(50.0, 0.0, 0.0);
+const PLAYER_SPEED: f32 = 200.;
 
 #[derive(Component)]
 pub struct Player;
