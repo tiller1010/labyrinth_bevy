@@ -37,13 +37,13 @@ pub fn spawn_player(commands: &mut Commands) {
 pub fn move_player(
     mut commands: Commands,
     keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut query: Query<&mut Transform, With<Player>>,
+    mut player_query: Query<&mut Transform, With<Player>>,
     time: Res<Time>,
     wall_collider_query: Query<&Transform, (With<Wall>, Without<Player>)>,
     finish_area_collider_query: Query<&Transform, (With<FinishArea>, Without<Player>)>,
     mut collision_events: EventWriter<CollisionEvent>,
 ) {
-    let mut player_transform = query.single_mut();
+    let mut player_transform = player_query.single_mut();
     let mut direction_x = 0.0;
     let mut direction_y = 0.0;
 
