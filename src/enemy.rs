@@ -48,11 +48,11 @@ pub fn apply_enemy_velocity(mut query: Query<(&mut Transform, &Velocity), With<E
     }
 }
 
-pub fn spawn_enemy(commands: &mut Commands) {
+fn spawn_enemy(commands: &mut Commands, x_position: f32, y_position: f32) {
     commands.spawn((
             SpriteBundle {
                 transform: Transform {
-                    translation: Vec3::new(80., 80., 0.),
+                    translation: Vec3::new(x_position, y_position, 0.),
                     scale: ENEMY_SIZE.extend(1.0),
                     ..default()
                 },
@@ -67,79 +67,88 @@ pub fn spawn_enemy(commands: &mut Commands) {
     ));
 }
 
+pub fn spawn_enemies(commands: &mut Commands) {
+    spawn_enemy(commands, 80., 80.);
+    spawn_enemy(commands, 120., 120.);
+    spawn_enemy(commands, 250., 340.);
+    spawn_enemy(commands, 440., 440.);
+    spawn_enemy(commands, 80., 440.);
+}
+
 pub fn update_enemy_movement(
     mut enemy_query: Query<(&mut Transform, &mut Velocity), With<Enemy>>,
     wall_collider_query: Query<&Transform, (With<Wall>, Without<Enemy>)>,
 ) {
-    let (mut enemy_transform, mut enemy_velocity) = enemy_query.single_mut();
+    for (mut enemy_transform, mut enemy_velocity) in &mut enemy_query {
 
-    let enemy_bounding_box = Aabb2d::new(
-        enemy_transform.translation.truncate(), 
-        enemy_transform.scale.truncate() / 2.,
-    );
-
-    for wall_transform in &wall_collider_query {
-        let collision = wall_collision(
-            &enemy_bounding_box,
-            Aabb2d::new(
-                wall_transform.translation.truncate(),
-                wall_transform.scale.truncate() / 2.,
-            ),
+        let enemy_bounding_box = Aabb2d::new(
+            enemy_transform.translation.truncate(), 
+            enemy_transform.scale.truncate() / 2.,
         );
 
-        if let Some(collision) = collision {
-            let mut reflect_x = 0.;
-            let mut reflect_y = 0.;
+        for wall_transform in &wall_collider_query {
+            let collision = wall_collision(
+                &enemy_bounding_box,
+                Aabb2d::new(
+                    wall_transform.translation.truncate(),
+                    wall_transform.scale.truncate() / 2.,
+                ),
+            );
 
-            match collision {
-                Collision::Left => reflect_x = -7.9,
-                Collision::Right => reflect_x = 7.9,
-                Collision::Top => reflect_y = 7.9,
-                Collision::Bottom => reflect_y = -7.9,
+            if let Some(collision) = collision {
+                let mut reflect_x = 0.;
+                let mut reflect_y = 0.;
+
+                match collision {
+                    Collision::Left => reflect_x = -7.9,
+                    Collision::Right => reflect_x = 7.9,
+                    Collision::Top => reflect_y = 7.9,
+                    Collision::Bottom => reflect_y = -7.9,
+                }
+
+                if reflect_x != 0. {
+                    enemy_transform.translation.x = enemy_transform.translation.x + reflect_x;
+                }
+
+                if reflect_y != 0. {
+                    enemy_transform.translation.y = enemy_transform.translation.y + reflect_y;
+                }
+
+                let random_direction: Direction = rand::random();
+
+                // Set velocity by random direction, but discourage backtracking based collision
+                if random_direction == Direction::Left && collision != Collision::Left {
+                    enemy_velocity.x = -1. * ENEMY_SPEED;
+                    enemy_velocity.y = 0.;
+                } else if random_direction == Direction::Right && collision != Collision::Right {
+                    enemy_velocity.x = 1. * ENEMY_SPEED;
+                    enemy_velocity.y = 0.;
+                } else if random_direction == Direction::Up && collision != Collision::Top {
+                    enemy_velocity.x = 0.;
+                    enemy_velocity.y = 1. * ENEMY_SPEED;
+                } else if random_direction == Direction::Down && collision != Collision::Bottom {
+                    enemy_velocity.x = 0.;
+                    enemy_velocity.y = -1. * ENEMY_SPEED;
+                }
+
+                let random_direction: Direction = rand::random();
+
+                // Allow backtracks
+                if random_direction == Direction::Left {
+                    enemy_velocity.x = -1. * ENEMY_SPEED;
+                    enemy_velocity.y = 0.;
+                } else if random_direction == Direction::Right {
+                    enemy_velocity.x = 1. * ENEMY_SPEED;
+                    enemy_velocity.y = 0.;
+                } else if random_direction == Direction::Up {
+                    enemy_velocity.x = 0.;
+                    enemy_velocity.y = 1. * ENEMY_SPEED;
+                } else {
+                    enemy_velocity.x = 0.;
+                    enemy_velocity.y = -1. * ENEMY_SPEED;
+                }
+
             }
-
-            if reflect_x != 0. {
-                enemy_transform.translation.x = enemy_transform.translation.x + reflect_x;
-            }
-
-            if reflect_y != 0. {
-                enemy_transform.translation.y = enemy_transform.translation.y + reflect_y;
-            }
-
-            let random_direction: Direction = rand::random();
-
-            // Set velocity by random direction, but discourage backtracking based collision
-            if random_direction == Direction::Left && collision != Collision::Left {
-                enemy_velocity.x = -1. * ENEMY_SPEED;
-                enemy_velocity.y = 0.;
-            } else if random_direction == Direction::Right && collision != Collision::Right {
-                enemy_velocity.x = 1. * ENEMY_SPEED;
-                enemy_velocity.y = 0.;
-            } else if random_direction == Direction::Up && collision != Collision::Top {
-                enemy_velocity.x = 0.;
-                enemy_velocity.y = 1. * ENEMY_SPEED;
-            } else if random_direction == Direction::Down && collision != Collision::Bottom {
-                enemy_velocity.x = 0.;
-                enemy_velocity.y = -1. * ENEMY_SPEED;
-            }
-
-            let random_direction: Direction = rand::random();
-
-            // Allow backtracks
-            if random_direction == Direction::Left {
-                enemy_velocity.x = -1. * ENEMY_SPEED;
-                enemy_velocity.y = 0.;
-            } else if random_direction == Direction::Right {
-                enemy_velocity.x = 1. * ENEMY_SPEED;
-                enemy_velocity.y = 0.;
-            } else if random_direction == Direction::Up {
-                enemy_velocity.x = 0.;
-                enemy_velocity.y = 1. * ENEMY_SPEED;
-            } else {
-                enemy_velocity.x = 0.;
-                enemy_velocity.y = -1. * ENEMY_SPEED;
-            }
-
         }
     }
 
