@@ -35,7 +35,7 @@ fn main() {
                 apply_enemy_velocity,
                 move_player,
                 update_camera,
-                // update_enemy_movement,
+                update_enemy_movement,
             )
             .chain(),
         )
