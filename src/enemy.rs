@@ -42,7 +42,6 @@ impl Distribution<Direction> for Standard {
 }
 
 pub fn apply_enemy_velocity(mut query: Query<(&mut Transform, &Velocity), With<Enemy>>, time: Res<Time>) {
-// pub fn apply_enemy_velocity(mut query: Query<(&mut Transform, &Velocity)>, time: Res<Time>) {
     for (mut transform, velocity) in &mut query {
         transform.translation.x += velocity.x * time.delta_seconds();
         transform.translation.y += velocity.y * time.delta_seconds();
@@ -115,38 +114,76 @@ pub fn update_enemy_movement(
                     enemy_transform.translation.y = enemy_transform.translation.y + reflect_y;
                 }
 
+                // Set velocity by random direction, but discourage going in the same direction & backtracking based collision
                 let random_direction: Direction = rand::random();
+                if random_direction == Direction::Left
+                    && collision != Collision::Left
+                    && collision != Collision::Right
+                {
+                    enemy_velocity.x = -1. * ENEMY_SPEED;
+                    enemy_velocity.y = 0.;
+                    return;
+                } else if random_direction == Direction::Right
+                    && collision != Collision::Left
+                    && collision != Collision::Right
+                {
+                    enemy_velocity.x = 1. * ENEMY_SPEED;
+                    enemy_velocity.y = 0.;
+                    return;
+                } else if random_direction == Direction::Up
+                    && collision != Collision::Top
+                    && collision != Collision::Bottom
+                {
+                    enemy_velocity.x = 0.;
+                    enemy_velocity.y = 1. * ENEMY_SPEED;
+                    return;
+                } else if random_direction == Direction::Down
+                    && collision != Collision::Top
+                    && collision != Collision::Bottom
+                {
+                    enemy_velocity.x = 0.;
+                    enemy_velocity.y = -1. * ENEMY_SPEED;
+                    return;
+                }
 
                 // Set velocity by random direction, but discourage backtracking based collision
+                let random_direction: Direction = rand::random();
                 if random_direction == Direction::Left && collision != Collision::Left {
                     enemy_velocity.x = -1. * ENEMY_SPEED;
                     enemy_velocity.y = 0.;
+                    return;
                 } else if random_direction == Direction::Right && collision != Collision::Right {
                     enemy_velocity.x = 1. * ENEMY_SPEED;
                     enemy_velocity.y = 0.;
+                    return;
                 } else if random_direction == Direction::Up && collision != Collision::Top {
                     enemy_velocity.x = 0.;
                     enemy_velocity.y = 1. * ENEMY_SPEED;
+                    return;
                 } else if random_direction == Direction::Down && collision != Collision::Bottom {
                     enemy_velocity.x = 0.;
                     enemy_velocity.y = -1. * ENEMY_SPEED;
+                    return;
                 }
 
+                // Fallback to allow for same direction or backtracking
                 let random_direction: Direction = rand::random();
-
-                // Allow backtracks
                 if random_direction == Direction::Left {
                     enemy_velocity.x = -1. * ENEMY_SPEED;
                     enemy_velocity.y = 0.;
+                    return;
                 } else if random_direction == Direction::Right {
                     enemy_velocity.x = 1. * ENEMY_SPEED;
                     enemy_velocity.y = 0.;
+                    return;
                 } else if random_direction == Direction::Up {
                     enemy_velocity.x = 0.;
                     enemy_velocity.y = 1. * ENEMY_SPEED;
+                    return;
                 } else {
                     enemy_velocity.x = 0.;
                     enemy_velocity.y = -1. * ENEMY_SPEED;
+                    return;
                 }
 
             }
