@@ -13,7 +13,12 @@ use crate::walls::spawn_walls;
 use crate::collider::CollisionEvent;
 use crate::camera::{setup_camera, update_camera};
 use crate::finish_area::spawn_finish_area;
-use crate::enemy::{spawn_enemies, apply_enemy_velocity, update_enemy_movement};
+use crate::enemy::{
+    spawn_enemies,
+    apply_enemy_velocity,
+    update_enemy_movement,
+    check_for_player_collisions,
+};
 
 fn setup(
     mut commands: Commands,
@@ -36,6 +41,7 @@ fn main() {
                 move_player,
                 update_camera,
                 update_enemy_movement,
+                check_for_player_collisions,
             )
             .chain(),
         )

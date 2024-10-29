@@ -78,16 +78,16 @@ pub fn spawn_finish_area(commands: &mut Commands) {
 
 fn spawn_winning_message(commands: &mut Commands) {
     commands.spawn((
-            WinningMessage,
-            TextBundle::from_sections([
-                TextSection::new(
-                    "You Win!",
-                    TextStyle {
-                        font_size: 40.,
-                        color: Color::srgb(120., 120., 120.),
-                        ..default()
-                    },
-                ),
+        WinningMessage,
+        TextBundle::from_sections([
+            TextSection::new(
+                "You Win!",
+                TextStyle {
+                    font_size: 40.,
+                    color: Color::srgb(120., 120., 120.),
+                    ..default()
+                },
+            ),
         ])
         .with_style(Style {
             position_type: PositionType::Absolute,

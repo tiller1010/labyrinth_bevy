@@ -1,5 +1,5 @@
 use bevy::{
-    math::bounding::Aabb2d,
+    math::bounding::{Aabb2d, IntersectsVolume},
     prelude::*,
 };
 use rand::{
@@ -9,6 +9,7 @@ use rand::{
 
 use crate::collider::Collision;
 use crate::walls::{Wall, wall_collision};
+use crate::player::Player;
 
 #[derive(Component)]
 pub struct Enemy;
@@ -158,6 +159,47 @@ pub fn update_enemy_movement(
     //     Direction::Up => { ..enemy.velocity, y: -10. },
     //     _ => { ..enemy.velocity, y: -10. },
     // }
+
+}
+
+pub fn check_for_player_collisions(
+    mut commands: Commands,
+    mut player_query: Query<&Transform, With<Player>>,
+    enemies_query: Query<&Transform, With<Enemy>>,
+) {
+    let player_transform = player_query.single_mut();
+    let player_bounding_box = Aabb2d::new(
+        player_transform.translation.truncate(),
+        player_transform.scale.truncate() / 2.,
+    );
+
+    for enemy_transform in &enemies_query {
+        let enemy_bounding_box = Aabb2d::new(
+            enemy_transform.translation.truncate(),
+            enemy_transform.scale.truncate() / 2.,
+        );
+
+        if enemy_bounding_box.intersects(&player_bounding_box) {
+            commands.spawn((
+                TextBundle::from_sections([
+                    TextSection::new(
+                        "Game Over",
+                        TextStyle {
+                            font_size: 40.,
+                            color: Color::srgb(120., 0., 0.),
+                            ..default()
+                        },
+                    ),
+                ])
+                .with_style(Style {
+                    position_type: PositionType::Absolute,
+                    top: Val::Px(5.),
+                    right: Val::Px(5.),
+                    ..default()
+                }),
+            ));
+        }
+    }
 
 }
 
