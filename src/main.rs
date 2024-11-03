@@ -8,7 +8,13 @@ mod finish_area;
 mod maze;
 mod enemy;
 
-use crate::player::{spawn_player, move_player};
+use crate::player::{
+    spawn_player,
+    move_player,
+    player_attack,
+    player_attack_check_for_enemy_collisions,
+    remove_player_attacks,
+};
 use crate::walls::spawn_walls;
 use crate::collider::CollisionEvent;
 use crate::camera::{setup_camera, update_camera};
@@ -42,6 +48,9 @@ fn main() {
                 update_camera,
                 update_enemy_movement,
                 check_for_player_collisions,
+                player_attack,
+                player_attack_check_for_enemy_collisions,
+                remove_player_attacks,
             )
             .chain(),
         )
