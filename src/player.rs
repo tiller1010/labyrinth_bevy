@@ -24,6 +24,7 @@ enum PlayerFacingDirection {
 
 #[derive(Component)]
 pub struct Player {
+    pub alive: bool,
     player_attack_cooldown_timer: Timer,
     player_facing_direction: PlayerFacingDirection,
 }
@@ -49,8 +50,9 @@ pub fn spawn_player(commands: &mut Commands) {
                 ..default()
             },
             Player {
-               player_attack_cooldown_timer: Timer::new(Duration::from_millis(0), TimerMode::Once),
-               player_facing_direction: PlayerFacingDirection::Up,
+                alive: true,
+                player_attack_cooldown_timer: Timer::new(Duration::from_millis(0), TimerMode::Once),
+                player_facing_direction: PlayerFacingDirection::Up,
             },
             Collider,
     ));
@@ -62,6 +64,8 @@ pub fn player_attack(
     mut player_query: Query<(&mut Player, &Transform), With<Player>>,
 ) {
     let (mut player, player_transform) = player_query.single_mut();
+    
+    if !player.alive { return };
     
     if keyboard_input.pressed(KeyCode::KeyX) && player.player_attack_cooldown_timer.finished() {
         player.player_attack_cooldown_timer = Timer::new(Duration::from_millis(500), TimerMode::Once);
@@ -170,6 +174,9 @@ pub fn move_player(
     mut collision_events: EventWriter<CollisionEvent>,
 ) {
     let (mut player, mut player_transform) = player_query.single_mut();
+
+    if !player.alive { return };
+
     let mut direction_x = 0.0;
     let mut direction_y = 0.0;
 

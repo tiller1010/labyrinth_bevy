@@ -189,22 +189,14 @@ pub fn update_enemy_movement(
             }
         }
     }
-
-    // enemy_velocity = match random_direction {
-    //     Direction::Left => { ..enemy.velocity, x: -10. },
-    //     Direction::Right => { ..enemy.velocity, x: -10. },
-    //     Direction::Up => { ..enemy.velocity, y: -10. },
-    //     _ => { ..enemy.velocity, y: -10. },
-    // }
-
 }
 
 pub fn check_for_player_collisions(
     mut commands: Commands,
-    mut player_query: Query<&Transform, With<Player>>,
+    mut player_query: Query<(&mut Player, &Transform), With<Player>>,
     enemies_query: Query<&Transform, With<Enemy>>,
 ) {
-    let player_transform = player_query.single_mut();
+    let (mut player, player_transform) = player_query.single_mut();
     let player_bounding_box = Aabb2d::new(
         player_transform.translation.truncate(),
         player_transform.scale.truncate() / 2.,
@@ -217,6 +209,8 @@ pub fn check_for_player_collisions(
         );
 
         if enemy_bounding_box.intersects(&player_bounding_box) {
+            player.alive = false;
+
             commands.spawn((
                 TextBundle::from_sections([
                     TextSection::new(
