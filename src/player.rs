@@ -14,9 +14,18 @@ const PLAYER_COLOR: Color = Color::srgb(50.0, 0.0, 0.0);
 const PLAYER_SPEED: f32 = 200.;
 const PLAYER_ATTACK_COLOR: Color = Color::srgb(0., 0., 0.);
 
+#[derive(PartialEq)]
+enum PlayerFacingDirection {
+    Left,
+    Right,
+    Up,
+    Down,
+}
+
 #[derive(Component)]
 pub struct Player {
     player_attack_cooldown_timer: Timer,
+    player_facing_direction: PlayerFacingDirection,
 }
 
 #[derive(Component)]
@@ -41,6 +50,7 @@ pub fn spawn_player(commands: &mut Commands) {
             },
             Player {
                player_attack_cooldown_timer: Timer::new(Duration::from_millis(0), TimerMode::Once),
+               player_facing_direction: PlayerFacingDirection::Up,
             },
             Collider,
     ));
@@ -56,15 +66,37 @@ pub fn player_attack(
     if keyboard_input.pressed(KeyCode::KeyX) && player.player_attack_cooldown_timer.finished() {
         player.player_attack_cooldown_timer = Timer::new(Duration::from_millis(500), TimerMode::Once);
 
+        let attack_location = match player.player_facing_direction {
+            PlayerFacingDirection::Left => Vec2::new(
+                player_transform.translation.x - 20.,
+                player_transform.translation.y
+            ),
+            PlayerFacingDirection::Right => Vec2::new(
+                player_transform.translation.x + 20.,
+                player_transform.translation.y
+            ),
+            PlayerFacingDirection::Up => Vec2::new(
+                player_transform.translation.x,
+                player_transform.translation.y + 20.
+            ),
+            PlayerFacingDirection::Down => Vec2::new(
+                player_transform.translation.x,
+                player_transform.translation.y - 20.
+            ),
+        };
+
+        let attack_scale = match player.player_facing_direction {
+            PlayerFacingDirection::Left => Vec3::new(40., 20., 1.),
+            PlayerFacingDirection::Right => Vec3::new(40., 20., 1.),
+            PlayerFacingDirection::Up => Vec3::new(20., 40., 1.),
+            PlayerFacingDirection::Down => Vec3::new(20., 40., 1.),
+        };
+
         commands.spawn((
             SpriteBundle {
                 transform: Transform {
-                    translation: Vec3::new(
-                        player_transform.translation.x,
-                        player_transform.translation.y,
-                        -1.
-                    ),
-                    scale: Vec3::new(40., 40., 1.),
+                    translation: attack_location.extend(-1.),
+                    scale: attack_scale,
                     ..default()
                 },
                 sprite: Sprite {
@@ -131,30 +163,34 @@ pub fn cooldown_player_attack_timer(
 pub fn move_player(
     mut commands: Commands,
     keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut player_query: Query<&mut Transform, With<Player>>,
+    mut player_query: Query<(&mut Player, &mut Transform), With<Player>>,
     time: Res<Time>,
     wall_collider_query: Query<&Transform, (With<Wall>, Without<Player>)>,
     finish_area_collider_query: Query<&Transform, (With<FinishArea>, Without<Player>)>,
     mut collision_events: EventWriter<CollisionEvent>,
 ) {
-    let mut player_transform = player_query.single_mut();
+    let (mut player, mut player_transform) = player_query.single_mut();
     let mut direction_x = 0.0;
     let mut direction_y = 0.0;
 
     if keyboard_input.pressed(KeyCode::ArrowLeft) {
         direction_x -= 1.0;
+        player.player_facing_direction = PlayerFacingDirection::Left;
     }
 
     if keyboard_input.pressed(KeyCode::ArrowRight) {
         direction_x += 1.0;
+        player.player_facing_direction = PlayerFacingDirection::Right;
     }
 
     if keyboard_input.pressed(KeyCode::ArrowUp) {
         direction_y += 1.0;
+        player.player_facing_direction = PlayerFacingDirection::Up;
     }
 
     if keyboard_input.pressed(KeyCode::ArrowDown) {
         direction_y -= 1.0;
+        player.player_facing_direction = PlayerFacingDirection::Down;
     }
 
     let new_player_position_x = player_transform.translation.x + direction_x * PLAYER_SPEED * time.delta_seconds();
