@@ -27,9 +27,33 @@ use crate::enemy::{
     check_for_player_collisions,
 };
 
+fn explain_game(
+    commands: &mut Commands,
+) {
+    commands.spawn((
+        TextBundle::from_sections([
+            TextSection::new(
+                "Use arrow keys to move, press x to attack.\nAvoid enemies and try to find the green finish area.",
+                TextStyle {
+                    font_size: 20.,
+                    color: Color::srgb(80., 80., 80.),
+                    ..default()
+                },
+            ),
+        ])
+        .with_style(Style {
+            position_type: PositionType::Absolute,
+            bottom: Val::Px(5.),
+            right: Val::Px(5.),
+            ..default()
+        }),
+    ));
+}
+
 fn setup(
     mut commands: Commands,
 ) {
+    explain_game(&mut commands);
     spawn_walls(&mut commands);
     spawn_player(&mut commands);
     spawn_finish_area(&mut commands);

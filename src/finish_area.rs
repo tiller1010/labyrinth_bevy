@@ -84,7 +84,7 @@ fn spawn_winning_message(commands: &mut Commands) {
                 "You Win!",
                 TextStyle {
                     font_size: 40.,
-                    color: Color::srgb(120., 120., 120.),
+                    color: Color::srgb(0., 120., 0.),
                     ..default()
                 },
             ),
