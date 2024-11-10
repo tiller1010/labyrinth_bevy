@@ -15,11 +15,13 @@ const PLAYER_SPEED: f32 = 200.;
 const PLAYER_ATTACK_COLOR: Color = Color::srgb(0., 0., 0.);
 
 #[derive(Component)]
-pub struct Player;
+pub struct Player {
+    player_attack_cooldown_timer: Timer,
+}
 
 #[derive(Component)]
 pub struct PlayerAttack {
-    timer: Timer,
+    active_timer: Timer,
 }
 
 pub fn spawn_player(commands: &mut Commands) {
@@ -37,7 +39,9 @@ pub fn spawn_player(commands: &mut Commands) {
                 },
                 ..default()
             },
-            Player,
+            Player {
+               player_attack_cooldown_timer: Timer::new(Duration::from_millis(0), TimerMode::Once),
+            },
             Collider,
     ));
 }
@@ -45,11 +49,13 @@ pub fn spawn_player(commands: &mut Commands) {
 pub fn player_attack(
     mut commands: Commands,
     keyboard_input: Res<ButtonInput<KeyCode>>,
-    player_query: Query<&Transform, With<Player>>,
+    mut player_query: Query<(&mut Player, &Transform), With<Player>>,
 ) {
-    let player_transform = player_query.single();
+    let (mut player, player_transform) = player_query.single_mut();
     
-    if keyboard_input.pressed(KeyCode::KeyX) {
+    if keyboard_input.pressed(KeyCode::KeyX) && player.player_attack_cooldown_timer.finished() {
+        player.player_attack_cooldown_timer = Timer::new(Duration::from_millis(500), TimerMode::Once);
+
         commands.spawn((
             SpriteBundle {
                 transform: Transform {
@@ -68,7 +74,7 @@ pub fn player_attack(
                 ..default()
             },
             PlayerAttack {
-                timer: Timer::new(Duration::from_millis(100), TimerMode::Once),
+                active_timer: Timer::new(Duration::from_millis(100), TimerMode::Once),
             }
         ));
     }
@@ -105,11 +111,20 @@ pub fn remove_player_attacks(
     time: Res<Time>,
 ) {
     for (player_attack_entity, mut player_attack) in player_attack_query.iter_mut() {
-        player_attack.timer.tick(time.delta());
+        player_attack.active_timer.tick(time.delta());
 
-        if player_attack.timer.finished() {
+        if player_attack.active_timer.finished() {
             commands.entity(player_attack_entity).despawn();
         }
+    }
+}
+
+pub fn cooldown_player_attack_timer(
+    mut player_query: Query<&mut Player>,
+    time: Res<Time>,
+) {
+    for mut player in player_query.iter_mut() {
+        player.player_attack_cooldown_timer.tick(time.delta());
     }
 }
 

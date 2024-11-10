@@ -14,6 +14,7 @@ use crate::player::{
     player_attack,
     player_attack_check_for_enemy_collisions,
     remove_player_attacks,
+    cooldown_player_attack_timer,
 };
 use crate::walls::spawn_walls;
 use crate::collider::CollisionEvent;
@@ -51,6 +52,7 @@ fn main() {
                 player_attack,
                 player_attack_check_for_enemy_collisions,
                 remove_player_attacks,
+                cooldown_player_attack_timer,
             )
             .chain(),
         )
