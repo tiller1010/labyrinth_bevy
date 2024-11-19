@@ -10,7 +10,6 @@ use crate::finish_area::{FinishArea, finish_area_collision};
 use crate::enemy::Enemy;
 
 const PLAYER_SIZE: Vec2 = Vec2::new(10.0, 10.0);
-const PLAYER_COLOR: Color = Color::srgb(50.0, 0.0, 0.0);
 const PLAYER_SPEED: f32 = 200.;
 const PLAYER_ATTACK_COLOR: Color = Color::srgb(0., 0., 0.);
 
@@ -34,17 +33,21 @@ pub struct PlayerAttack {
     active_timer: Timer,
 }
 
-pub fn spawn_player(commands: &mut Commands) {
+pub fn spawn_player(
+    commands: &mut Commands,
+    asset_server: Res<AssetServer>,
+) {
     // Player spawn
     commands.spawn((
             SpriteBundle {
+                texture: asset_server.load("player.png"),
                 transform: Transform {
                     translation: Vec3::new(20., 10., 0.),
                     scale: PLAYER_SIZE.extend(1.0),
                     ..default()
                 },
                 sprite: Sprite {
-                    color: PLAYER_COLOR,
+                    custom_size: Some(Vec2::new(2., 2.)),
                     ..default()
                 },
                 ..default()
@@ -229,18 +232,18 @@ pub fn move_player(
             let mut reflect_y = 0.;
 
             match collision {
-                Collision::Left => reflect_x = -7.9,
-                Collision::Right => reflect_x = 7.9,
-                Collision::Top => reflect_y = 7.9,
-                Collision::Bottom => reflect_y = -7.9,
+                Collision::Left => reflect_x = -1.,
+                Collision::Right => reflect_x = 1.,
+                Collision::Top => reflect_y = 1.,
+                Collision::Bottom => reflect_y = -1.,
             }
 
             if reflect_x != 0. {
-                player_transform.translation.x = player_transform.translation.x + reflect_x;
+                player_transform.translation.x = player_transform.translation.x + reflect_x * PLAYER_SPEED * time.delta_seconds();
             }
 
             if reflect_y != 0. {
-                player_transform.translation.y = player_transform.translation.y + reflect_y;
+                player_transform.translation.y = player_transform.translation.y + reflect_y * PLAYER_SPEED * time.delta_seconds();
             }
         }
     }
