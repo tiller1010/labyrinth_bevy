@@ -56,9 +56,9 @@ fn setup(
 ) {
     explain_game(&mut commands);
     spawn_walls(&mut commands);
-    spawn_player(&mut commands, asset_server);
+    spawn_player(&mut commands, &asset_server);
     spawn_finish_area(&mut commands);
-    spawn_enemies(&mut commands);
+    spawn_enemies(&mut commands, &asset_server);
 }
 
 fn main() {

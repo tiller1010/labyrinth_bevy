@@ -18,7 +18,6 @@ pub struct Enemy;
 pub struct Velocity(Vec2);
 
 const ENEMY_SIZE: Vec2 = Vec2::new(10., 10.,);
-const ENEMY_COLOR: Color = Color::srgb(50., 0., 50.);
 const INITIAL_ENEMY_DIRECTION: Vec2 = Vec2::new(1., 0.);
 const ENEMY_SPEED: f32 = 50.;
 
@@ -48,16 +47,22 @@ pub fn apply_enemy_velocity(mut query: Query<(&mut Transform, &Velocity), With<E
     }
 }
 
-fn spawn_enemy(commands: &mut Commands, x_position: f32, y_position: f32) {
+fn spawn_enemy(
+    commands: &mut Commands,
+    asset_server: &Res<AssetServer>,
+    x_position: f32,
+    y_position: f32
+) {
     commands.spawn((
             SpriteBundle {
+                texture: asset_server.load("enemy.png"),
                 transform: Transform {
                     translation: Vec3::new(x_position, y_position, 0.),
                     scale: ENEMY_SIZE.extend(1.0),
                     ..default()
                 },
                 sprite: Sprite {
-                    color: ENEMY_COLOR,
+                    custom_size: Some(Vec2::new(2., 2.)),
                     ..default()
                 },
                 ..default()
@@ -67,12 +72,15 @@ fn spawn_enemy(commands: &mut Commands, x_position: f32, y_position: f32) {
     ));
 }
 
-pub fn spawn_enemies(commands: &mut Commands) {
-    spawn_enemy(commands, 80., 80.);
-    spawn_enemy(commands, 120., 120.);
-    spawn_enemy(commands, 250., 340.);
-    spawn_enemy(commands, 440., 440.);
-    spawn_enemy(commands, 80., 440.);
+pub fn spawn_enemies(
+    commands: &mut Commands,
+    asset_server: &Res<AssetServer>,
+) {
+    spawn_enemy(commands, asset_server, 80., 80.);
+    spawn_enemy(commands, asset_server, 120., 120.);
+    spawn_enemy(commands, asset_server, 250., 340.);
+    spawn_enemy(commands, asset_server, 440., 440.);
+    spawn_enemy(commands, asset_server, 80., 440.);
 }
 
 pub fn update_enemy_movement(

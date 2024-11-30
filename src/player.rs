@@ -35,7 +35,7 @@ pub struct PlayerAttack {
 
 pub fn spawn_player(
     commands: &mut Commands,
-    asset_server: Res<AssetServer>,
+    asset_server: &Res<AssetServer>,
 ) {
     // Player spawn
     commands.spawn((
