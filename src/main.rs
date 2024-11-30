@@ -7,6 +7,7 @@ mod camera;
 mod finish_area;
 mod maze;
 mod enemy;
+mod coins;
 
 use crate::player::{
     spawn_player,
@@ -24,7 +25,14 @@ use crate::enemy::{
     spawn_enemies,
     apply_enemy_velocity,
     update_enemy_movement,
-    check_for_player_collisions,
+    check_for_player_collisions_with_enemies,
+};
+use crate::coins::{
+    Score,
+    spawn_coins,
+    spawn_scoreboard,
+    update_scoreboard,
+    check_for_player_collisions_with_coins,
 };
 
 fn explain_game(
@@ -59,12 +67,15 @@ fn setup(
     spawn_player(&mut commands, &asset_server);
     spawn_finish_area(&mut commands);
     spawn_enemies(&mut commands, &asset_server);
+    spawn_coins(&mut commands);
+    spawn_scoreboard(&mut commands);
 }
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_event::<CollisionEvent>()
+        .insert_resource(Score(0))
         .add_systems(Startup, (setup, setup_camera))
         .add_systems(
             FixedUpdate,
@@ -73,11 +84,13 @@ fn main() {
                 move_player,
                 update_camera,
                 update_enemy_movement,
-                check_for_player_collisions,
+                check_for_player_collisions_with_enemies,
                 player_attack,
                 player_attack_check_for_enemy_collisions,
                 remove_player_attacks,
                 cooldown_player_attack_timer,
+                update_scoreboard,
+                check_for_player_collisions_with_coins,
             )
             .chain(),
         )

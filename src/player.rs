@@ -124,10 +124,10 @@ pub fn player_attack(
 
 pub fn player_attack_check_for_enemy_collisions(
     mut commands: Commands,
-    player_attack_query: Query<(Entity, &Transform), With<PlayerAttack>>,
+    player_attack_query: Query<&Transform, With<PlayerAttack>>,
     enemies_query: Query<(Entity, &Transform), With<Enemy>>,
 ) {
-    for (player_attack_entity, player_attack_transform) in &player_attack_query {
+    for player_attack_transform in &player_attack_query {
         let player_attack_bounding_box = Aabb2d::new(
             player_attack_transform.translation.truncate(),
             player_attack_transform.scale.truncate() / 2.,
@@ -141,7 +141,6 @@ pub fn player_attack_check_for_enemy_collisions(
 
             if player_attack_bounding_box.intersects(&enemy_bounding_box) {
                 commands.entity(enemy_entity).despawn();
-                commands.entity(player_attack_entity).despawn()
             }
         }
     }

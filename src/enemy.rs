@@ -54,21 +54,21 @@ fn spawn_enemy(
     y_position: f32
 ) {
     commands.spawn((
-            SpriteBundle {
-                texture: asset_server.load("enemy.png"),
-                transform: Transform {
-                    translation: Vec3::new(x_position, y_position, 0.),
-                    scale: ENEMY_SIZE.extend(1.0),
-                    ..default()
-                },
-                sprite: Sprite {
-                    custom_size: Some(Vec2::new(2., 2.)),
-                    ..default()
-                },
+        SpriteBundle {
+            texture: asset_server.load("enemy.png"),
+            transform: Transform {
+                translation: Vec3::new(x_position, y_position, 0.),
+                scale: ENEMY_SIZE.extend(1.0),
                 ..default()
             },
-            Enemy,
-            Velocity(Vec2::new(INITIAL_ENEMY_DIRECTION.x * ENEMY_SPEED, INITIAL_ENEMY_DIRECTION.y * ENEMY_SPEED)),
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(2., 2.)),
+                ..default()
+            },
+            ..default()
+        },
+        Enemy,
+        Velocity(Vec2::new(INITIAL_ENEMY_DIRECTION.x * ENEMY_SPEED, INITIAL_ENEMY_DIRECTION.y * ENEMY_SPEED)),
     ));
 }
 
@@ -199,7 +199,7 @@ pub fn update_enemy_movement(
     }
 }
 
-pub fn check_for_player_collisions(
+pub fn check_for_player_collisions_with_enemies(
     mut commands: Commands,
     mut player_query: Query<(&mut Player, &Transform), With<Player>>,
     enemies_query: Query<&Transform, With<Enemy>>,
