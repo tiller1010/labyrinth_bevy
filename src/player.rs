@@ -11,7 +11,6 @@ use crate::enemy::Enemy;
 
 const PLAYER_SIZE: Vec2 = Vec2::new(10.0, 10.0);
 const PLAYER_SPEED: f32 = 200.;
-const PLAYER_ATTACK_COLOR: Color = Color::srgb(0., 0., 0.);
 
 #[derive(PartialEq)]
 enum PlayerFacingDirection {
@@ -63,6 +62,7 @@ pub fn spawn_player(
 
 pub fn player_attack(
     mut commands: Commands,
+    asset_server: Res<AssetServer>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut player_query: Query<(&mut Player, &Transform), With<Player>>,
 ) {
@@ -75,39 +75,42 @@ pub fn player_attack(
 
         let attack_location = match player.player_facing_direction {
             PlayerFacingDirection::Left => Vec2::new(
-                player_transform.translation.x - 20.,
+                player_transform.translation.x - 30.,
                 player_transform.translation.y
             ),
             PlayerFacingDirection::Right => Vec2::new(
-                player_transform.translation.x + 20.,
+                player_transform.translation.x + 30.,
                 player_transform.translation.y
             ),
             PlayerFacingDirection::Up => Vec2::new(
                 player_transform.translation.x,
-                player_transform.translation.y + 20.
+                player_transform.translation.y + 30.
             ),
             PlayerFacingDirection::Down => Vec2::new(
                 player_transform.translation.x,
-                player_transform.translation.y - 20.
+                player_transform.translation.y - 30.
             ),
         };
 
-        let attack_scale = match player.player_facing_direction {
-            PlayerFacingDirection::Left => Vec3::new(40., 20., 1.),
-            PlayerFacingDirection::Right => Vec3::new(40., 20., 1.),
-            PlayerFacingDirection::Up => Vec3::new(20., 40., 1.),
-            PlayerFacingDirection::Down => Vec3::new(20., 40., 1.),
+        // Rotation in radians
+        let attack_rotation = match player.player_facing_direction {
+            PlayerFacingDirection::Left => Quat::from_rotation_z(-1.57),
+            PlayerFacingDirection::Right => Quat::from_rotation_z(1.57),
+            PlayerFacingDirection::Up => Quat::from_rotation_z(3.14),
+            PlayerFacingDirection::Down => Quat::from_rotation_z(0.),
         };
 
         commands.spawn((
             SpriteBundle {
+                texture: asset_server.load("sword.png"),
                 transform: Transform {
                     translation: attack_location.extend(-1.),
-                    scale: attack_scale,
+                    scale: Vec3::new(20., 40., 1.),
+                    rotation: attack_rotation,
                     ..default()
                 },
                 sprite: Sprite {
-                    color: PLAYER_ATTACK_COLOR,
+                    custom_size: Some(Vec2::new(1., 1.)),
                     ..default()
                 },
                 ..default()
