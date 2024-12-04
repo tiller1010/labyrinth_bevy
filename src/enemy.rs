@@ -84,10 +84,11 @@ pub fn spawn_enemies(
 }
 
 pub fn update_enemy_movement(
-    mut enemy_query: Query<(&mut Transform, &mut Velocity), With<Enemy>>,
+    mut enemy_query: Query<(&mut Transform, &mut Velocity, &mut Handle<Image>, &mut Sprite), With<Enemy>>,
+    asset_server: Res<AssetServer>,
     wall_collider_query: Query<&Transform, (With<Wall>, Without<Enemy>)>,
 ) {
-    for (mut enemy_transform, mut enemy_velocity) in &mut enemy_query {
+    for (mut enemy_transform, mut enemy_velocity, mut enemy_texture, mut enemy_sprite) in &mut enemy_query {
 
         let enemy_bounding_box = Aabb2d::new(
             enemy_transform.translation.truncate(), 
@@ -130,6 +131,8 @@ pub fn update_enemy_movement(
                 {
                     enemy_velocity.x = -1. * ENEMY_SPEED;
                     enemy_velocity.y = 0.;
+                    *enemy_texture = asset_server.load("enemy.png");
+                    enemy_sprite.flip_x = true;
                     return;
                 } else if random_direction == Direction::Right
                     && collision != Collision::Left
@@ -137,6 +140,8 @@ pub fn update_enemy_movement(
                 {
                     enemy_velocity.x = 1. * ENEMY_SPEED;
                     enemy_velocity.y = 0.;
+                    *enemy_texture = asset_server.load("enemy.png");
+                    enemy_sprite.flip_x = false;
                     return;
                 } else if random_direction == Direction::Up
                     && collision != Collision::Top
@@ -144,6 +149,8 @@ pub fn update_enemy_movement(
                 {
                     enemy_velocity.x = 0.;
                     enemy_velocity.y = 1. * ENEMY_SPEED;
+                    *enemy_texture = asset_server.load("enemy-back.png");
+                    enemy_sprite.flip_x = false;
                     return;
                 } else if random_direction == Direction::Down
                     && collision != Collision::Top
@@ -151,6 +158,8 @@ pub fn update_enemy_movement(
                 {
                     enemy_velocity.x = 0.;
                     enemy_velocity.y = -1. * ENEMY_SPEED;
+                    *enemy_texture = asset_server.load("enemy.png");
+                    enemy_sprite.flip_x = false;
                     return;
                 }
 
@@ -159,18 +168,26 @@ pub fn update_enemy_movement(
                 if random_direction == Direction::Left && collision != Collision::Left {
                     enemy_velocity.x = -1. * ENEMY_SPEED;
                     enemy_velocity.y = 0.;
+                    *enemy_texture = asset_server.load("enemy.png");
+                    enemy_sprite.flip_x = true;
                     return;
                 } else if random_direction == Direction::Right && collision != Collision::Right {
                     enemy_velocity.x = 1. * ENEMY_SPEED;
                     enemy_velocity.y = 0.;
+                    *enemy_texture = asset_server.load("enemy.png");
+                    enemy_sprite.flip_x = false;
                     return;
                 } else if random_direction == Direction::Up && collision != Collision::Top {
                     enemy_velocity.x = 0.;
                     enemy_velocity.y = 1. * ENEMY_SPEED;
+                    *enemy_texture = asset_server.load("enemy-back.png");
+                    enemy_sprite.flip_x = false;
                     return;
                 } else if random_direction == Direction::Down && collision != Collision::Bottom {
                     enemy_velocity.x = 0.;
                     enemy_velocity.y = -1. * ENEMY_SPEED;
+                    *enemy_texture = asset_server.load("enemy.png");
+                    enemy_sprite.flip_x = false;
                     return;
                 }
 
@@ -179,18 +196,26 @@ pub fn update_enemy_movement(
                 if random_direction == Direction::Left {
                     enemy_velocity.x = -1. * ENEMY_SPEED;
                     enemy_velocity.y = 0.;
+                    *enemy_texture = asset_server.load("enemy.png");
+                    enemy_sprite.flip_x = true;
                     return;
                 } else if random_direction == Direction::Right {
                     enemy_velocity.x = 1. * ENEMY_SPEED;
                     enemy_velocity.y = 0.;
+                    *enemy_texture = asset_server.load("enemy.png");
+                    enemy_sprite.flip_x = false;
                     return;
                 } else if random_direction == Direction::Up {
                     enemy_velocity.x = 0.;
                     enemy_velocity.y = 1. * ENEMY_SPEED;
+                    *enemy_texture = asset_server.load("enemy-back.png");
+                    enemy_sprite.flip_x = false;
                     return;
                 } else {
                     enemy_velocity.x = 0.;
                     enemy_velocity.y = -1. * ENEMY_SPEED;
+                    *enemy_texture = asset_server.load("enemy.png");
+                    enemy_sprite.flip_x = false;
                     return;
                 }
 
