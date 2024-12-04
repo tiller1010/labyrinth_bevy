@@ -38,25 +38,25 @@ pub fn spawn_player(
 ) {
     // Player spawn
     commands.spawn((
-            SpriteBundle {
-                texture: asset_server.load("player.png"),
-                transform: Transform {
-                    translation: Vec3::new(20., 10., 0.),
-                    scale: PLAYER_SIZE.extend(1.0),
-                    ..default()
-                },
-                sprite: Sprite {
-                    custom_size: Some(Vec2::new(2., 2.)),
-                    ..default()
-                },
+        SpriteBundle {
+            texture: asset_server.load("player.png"),
+            transform: Transform {
+                translation: Vec3::new(20., 10., 0.),
+                scale: PLAYER_SIZE.extend(1.0),
                 ..default()
             },
-            Player {
-                alive: true,
-                player_attack_cooldown_timer: Timer::new(Duration::from_millis(0), TimerMode::Once),
-                player_facing_direction: PlayerFacingDirection::Up,
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(2., 2.)),
+                ..default()
             },
-            Collider,
+            ..default()
+        },
+        Player {
+            alive: true,
+            player_attack_cooldown_timer: Timer::new(Duration::from_millis(0), TimerMode::Once),
+            player_facing_direction: PlayerFacingDirection::Down,
+        },
+        Collider,
     ));
 }
 
@@ -171,14 +171,15 @@ pub fn cooldown_player_attack_timer(
 
 pub fn move_player(
     mut commands: Commands,
+    asset_server: Res<AssetServer>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut player_query: Query<(&mut Player, &mut Transform), With<Player>>,
+    mut player_query: Query<(&mut Player, &mut Transform, &mut Handle<Image>, &mut Sprite), With<Player>>,
     time: Res<Time>,
     wall_collider_query: Query<&Transform, (With<Wall>, Without<Player>)>,
     finish_area_collider_query: Query<&Transform, (With<FinishArea>, Without<Player>)>,
     mut collision_events: EventWriter<CollisionEvent>,
 ) {
-    let (mut player, mut player_transform) = player_query.single_mut();
+    let (mut player, mut player_transform, mut player_texture, mut player_sprite) = player_query.single_mut();
 
     if !player.alive { return };
 
@@ -188,21 +189,29 @@ pub fn move_player(
     if keyboard_input.pressed(KeyCode::ArrowLeft) {
         direction_x -= 1.0;
         player.player_facing_direction = PlayerFacingDirection::Left;
+        *player_texture = asset_server.load("player.png");
+        player_sprite.flip_x = true;
     }
 
     if keyboard_input.pressed(KeyCode::ArrowRight) {
         direction_x += 1.0;
         player.player_facing_direction = PlayerFacingDirection::Right;
+        *player_texture = asset_server.load("player.png");
+        player_sprite.flip_x = false;
     }
 
     if keyboard_input.pressed(KeyCode::ArrowUp) {
         direction_y += 1.0;
         player.player_facing_direction = PlayerFacingDirection::Up;
+        *player_texture = asset_server.load("player-back.png");
+        player_sprite.flip_x = false;
     }
 
     if keyboard_input.pressed(KeyCode::ArrowDown) {
         direction_y -= 1.0;
         player.player_facing_direction = PlayerFacingDirection::Down;
+        *player_texture = asset_server.load("player.png");
+        player_sprite.flip_x = false;
     }
 
     let new_player_position_x = player_transform.translation.x + direction_x * PLAYER_SPEED * time.delta_seconds();
