@@ -35,11 +35,17 @@ pub struct PlayerAttack {
 pub fn spawn_player(
     commands: &mut Commands,
     asset_server: &Res<AssetServer>,
+    texture_atlas_layouts: &mut ResMut<Assets<TextureAtlasLayout>>,
 ) {
+    let texture = asset_server.load("player-texture-atlas.png");
+    let layout = TextureAtlasLayout::from_grid(UVec2::new(12, 15), 6, 1, None, None);
+    let texture_atlas_layout = texture_atlas_layouts.add(layout);
+    let animation_config = AnimationConfig::new(0, 0, 10);
+
     // Player spawn
     commands.spawn((
         SpriteBundle {
-            texture: asset_server.load("player.png"),
+            texture: texture.clone(),
             transform: Transform {
                 translation: Vec3::new(20., 10., 0.),
                 scale: PLAYER_SIZE.extend(1.0),
@@ -57,7 +63,80 @@ pub fn spawn_player(
             player_facing_direction: PlayerFacingDirection::Down,
         },
         Collider,
+        TextureAtlas {
+            layout: texture_atlas_layout.clone(),
+            index: animation_config.first_sprite_index,
+        },
+        animation_config,
     ));
+}
+
+#[derive(Component)]
+pub struct AnimationConfig {
+    first_sprite_index: usize,
+    last_sprite_index: usize,
+    fps: u8,
+    frame_timer: Timer,
+}
+
+impl AnimationConfig {
+    fn new(first: usize, last: usize, fps: u8) -> Self {
+        Self {
+            first_sprite_index: first,
+            last_sprite_index: last,
+            fps,
+            frame_timer: Self::timer_from_fps(fps),
+        }
+    }
+
+    fn timer_from_fps(fps: u8) -> Timer {
+        Timer::new(Duration::from_secs_f32(1. / (fps as f32)), TimerMode::Once)
+    }
+}
+
+pub fn trigger_animation(
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    mut query: Query<(&mut AnimationConfig, &mut TextureAtlas)>,
+) {
+    let (mut animation, mut atlas) = query.single_mut();
+    if atlas.index == 0 || atlas.index == 3 {
+        if keyboard_input.pressed(KeyCode::ArrowLeft)
+        || keyboard_input.pressed(KeyCode::ArrowRight)
+        || keyboard_input.pressed(KeyCode::ArrowDown)
+        {
+            atlas.index = 1;
+            animation.first_sprite_index = 1;
+            animation.last_sprite_index = 2;
+        } else if keyboard_input.pressed(KeyCode::ArrowUp) {
+            atlas.index = 4;
+            animation.first_sprite_index = 4;
+            animation.last_sprite_index = 5;
+        }
+
+        animation.frame_timer = AnimationConfig::timer_from_fps(animation.fps);
+    }
+}
+
+pub fn execute_player_walking_animations(
+    time: Res<Time>,
+    mut query: Query<(&mut AnimationConfig, &mut TextureAtlas)>,
+) {
+    for (mut animation, mut atlas) in &mut query {
+        animation.frame_timer.tick(time.delta());
+
+        if animation.frame_timer.just_finished() {
+            if atlas.index == animation.last_sprite_index {
+                if animation.first_sprite_index == 0 {
+                    atlas.index = 0;
+                } else {
+                    atlas.index = animation.first_sprite_index - 1;
+                }
+            } else {
+                atlas.index += 1;
+                animation.frame_timer = AnimationConfig::timer_from_fps(animation.fps);
+            }
+        }
+    }
 }
 
 pub fn player_attack(
@@ -171,15 +250,14 @@ pub fn cooldown_player_attack_timer(
 
 pub fn move_player(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut player_query: Query<(&mut Player, &mut Transform, &mut Handle<Image>, &mut Sprite), With<Player>>,
+    mut player_query: Query<(&mut Player, &mut Transform, &mut Sprite), With<Player>>,
     time: Res<Time>,
     wall_collider_query: Query<&Transform, (With<Wall>, Without<Player>)>,
     finish_area_collider_query: Query<&Transform, (With<FinishArea>, Without<Player>)>,
     mut collision_events: EventWriter<CollisionEvent>,
 ) {
-    let (mut player, mut player_transform, mut player_texture, mut player_sprite) = player_query.single_mut();
+    let (mut player, mut player_transform, mut player_sprite) = player_query.single_mut();
 
     if !player.alive { return };
 
@@ -189,28 +267,24 @@ pub fn move_player(
     if keyboard_input.pressed(KeyCode::ArrowLeft) {
         direction_x -= 1.0;
         player.player_facing_direction = PlayerFacingDirection::Left;
-        *player_texture = asset_server.load("player.png");
         player_sprite.flip_x = true;
     }
 
     if keyboard_input.pressed(KeyCode::ArrowRight) {
         direction_x += 1.0;
         player.player_facing_direction = PlayerFacingDirection::Right;
-        *player_texture = asset_server.load("player.png");
         player_sprite.flip_x = false;
     }
 
     if keyboard_input.pressed(KeyCode::ArrowUp) {
         direction_y += 1.0;
         player.player_facing_direction = PlayerFacingDirection::Up;
-        *player_texture = asset_server.load("player-back.png");
         player_sprite.flip_x = false;
     }
 
     if keyboard_input.pressed(KeyCode::ArrowDown) {
         direction_y -= 1.0;
         player.player_facing_direction = PlayerFacingDirection::Down;
-        *player_texture = asset_server.load("player.png");
         player_sprite.flip_x = false;
     }
 
