@@ -24,7 +24,10 @@ use crate::player::player_attack::{
     remove_player_attacks,
     cooldown_player_attack_timer,
 };
-use crate::walls::spawn_walls;
+use crate::walls::{
+    spawn_walls,
+    player_wall_collistions,
+};
 use crate::collider::CollisionEvent;
 use crate::camera::{setup_camera, update_camera};
 use crate::finish_area::spawn_finish_area;
@@ -100,6 +103,7 @@ fn main() {
             (
                 apply_enemy_velocity,
                 move_player,
+                player_wall_collistions,
                 update_camera,
                 update_enemy_movement,
                 check_for_player_collisions_with_enemies,

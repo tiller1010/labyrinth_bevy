@@ -3,8 +3,12 @@ use bevy::{
     prelude::*,
 };
 
-use crate::collider::{Collider, Collision};
+use crate::collider::{Collider, Collision, CollisionEvent};
 use crate::maze::draw_maze;
+use crate::player::player::{
+    Player,
+    PLAYER_SPEED,
+};
 
 const WALL_COLOR: Color = Color::srgb(120.0, 120.0, 120.0);
 const WALL_THICKNESS: f32 = 5.;
@@ -86,6 +90,52 @@ pub fn wall_collision(player_bounding_box: &Aabb2d, wall: Aabb2d) -> Option<Coll
     };
 
     Some(side)
+}
+
+pub fn player_wall_collistions(
+    mut player_query: Query<&mut Transform, With<Player>>,
+    wall_collider_query: Query<&Transform, (With<Wall>, Without<Player>)>,
+    time: Res<Time>,
+    mut collision_events: EventWriter<CollisionEvent>,
+) {
+    let mut player_transform = player_query.single_mut();
+
+    let player_bounding_box = Aabb2d::new(
+        player_transform.translation.truncate(), 
+        player_transform.scale.truncate() / 2.,
+    );
+
+    for wall_transform in &wall_collider_query {
+        let collision = wall_collision(
+            &player_bounding_box,
+            Aabb2d::new(
+                wall_transform.translation.truncate(),
+                wall_transform.scale.truncate() / 2.,
+            ),
+        );
+
+        if let Some(collision) = collision {
+            collision_events.send_default();
+
+            let mut reflect_x = 0.;
+            let mut reflect_y = 0.;
+
+            match collision {
+                Collision::Left => reflect_x = -1.,
+                Collision::Right => reflect_x = 1.,
+                Collision::Top => reflect_y = 1.,
+                Collision::Bottom => reflect_y = -1.,
+            }
+
+            if reflect_x != 0. {
+                player_transform.translation.x = player_transform.translation.x + reflect_x * PLAYER_SPEED * time.delta_seconds();
+            }
+
+            if reflect_y != 0. {
+                player_transform.translation.y = player_transform.translation.y + reflect_y * PLAYER_SPEED * time.delta_seconds();
+            }
+        }
+    }
 }
 
 pub fn spawn_walls(commands: &mut Commands) {
