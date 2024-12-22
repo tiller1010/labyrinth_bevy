@@ -3,7 +3,7 @@ use bevy::{
     prelude::*,
 };
 
-use crate::player::Player;
+use crate::player::player::Player;
 
 #[derive(Component)]
 pub struct Coin;

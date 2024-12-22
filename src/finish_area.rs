@@ -3,7 +3,7 @@ use bevy::{
     prelude::*,
 };
 
-use crate::player::Player;
+use crate::player::player::Player;
 use crate::collider::Collider;
 
 const FINISH_AREA_COLOR: Color = Color::srgb(0., 115., 0.);

@@ -12,15 +12,17 @@ mod maze;
 mod enemy;
 mod coins;
 
-use crate::player::{
+use crate::player::player::{
     spawn_player,
     move_player,
+    execute_player_walking_animations,
+    trigger_player_walking_animation,
+};
+use crate::player::player_attack::{
     player_attack,
     player_attack_check_for_enemy_collisions,
     remove_player_attacks,
     cooldown_player_attack_timer,
-    execute_player_walking_animations,
-    trigger_animation,
 };
 use crate::walls::spawn_walls;
 use crate::collider::CollisionEvent;
@@ -87,10 +89,10 @@ fn main() {
         .add_systems(
             Update,
             (
-                trigger_animation.run_if(input_pressed(KeyCode::ArrowLeft)),
-                trigger_animation.run_if(input_pressed(KeyCode::ArrowRight)),
-                trigger_animation.run_if(input_pressed(KeyCode::ArrowUp)),
-                trigger_animation.run_if(input_pressed(KeyCode::ArrowDown)),
+                trigger_player_walking_animation.run_if(input_pressed(KeyCode::ArrowLeft)),
+                trigger_player_walking_animation.run_if(input_pressed(KeyCode::ArrowRight)),
+                trigger_player_walking_animation.run_if(input_pressed(KeyCode::ArrowUp)),
+                trigger_player_walking_animation.run_if(input_pressed(KeyCode::ArrowDown)),
             )
         )
         .add_systems(

@@ -9,7 +9,7 @@ use rand::{
 
 use crate::collider::Collision;
 use crate::walls::{Wall, wall_collision};
-use crate::player::Player;
+use crate::player::player::Player;
 
 #[derive(Component)]
 pub struct Enemy;

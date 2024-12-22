@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::player::Player;
+use crate::player::player::Player;
 
 const CAM_LERP_FACTOR: f32 = 2.;
 
