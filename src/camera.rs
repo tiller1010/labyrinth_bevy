@@ -6,13 +6,13 @@ const CAM_LERP_FACTOR: f32 = 2.;
 
 pub fn setup_camera(mut commands: Commands) {
     commands.spawn((
-            Camera2dBundle {
-                camera: Camera {
-                    hdr: true,
-                    ..default()
-                },
+        Camera2dBundle {
+            camera: Camera {
+                hdr: true,
                 ..default()
             },
+            ..default()
+        },
     ));
 }
 

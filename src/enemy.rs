@@ -264,6 +264,5 @@ pub fn check_for_player_collisions_with_enemies(
             ));
         }
     }
-
 }
 
