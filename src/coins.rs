@@ -21,8 +21,8 @@ pub fn spawn_coins(
     commands: &mut Commands,
 ) {
     spawn_coin(commands, 80., 80.);
-    spawn_coin(commands, 120., 120.);
-    spawn_coin(commands, 250., 340.);
+    spawn_coin(commands, 112., 120.);
+    spawn_coin(commands, 257., 340.);
     spawn_coin(commands, 440., 440.);
     spawn_coin(commands, 80., 440.);
 }
