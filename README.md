@@ -5,6 +5,7 @@
 
 ## Web Launch
 `cargo run --example web`
+Open under [http://localhost:8080](http://localhost:8080)
 
 ## Gameplay
 - Use arrow keys to move.
