@@ -11,6 +11,7 @@ mod finish_area;
 mod maze;
 mod enemy;
 mod coins;
+mod music;
 
 use crate::player::player::{
     spawn_player,
@@ -44,6 +45,7 @@ use crate::coins::{
     update_scoreboard,
     check_for_player_collisions_with_coins,
 };
+use music::play_music;
 
 fn explain_game(
     commands: &mut Commands,
@@ -81,6 +83,7 @@ fn setup(
     spawn_enemies(&mut commands, &asset_server);
     spawn_coins(&mut commands);
     spawn_scoreboard(&mut commands);
+    play_music(&mut commands, &asset_server);
 }
 
 fn main() {
